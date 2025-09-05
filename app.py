@@ -3,18 +3,19 @@ import pickle
 import numpy as np
 import joblib
 import pandas as pd
-def load_model():
-    return joblib.load('model.joblib')
-    scaler = joblib.load("scaler.joblib")
-    weather_features_encoded_cols = joblib.load("weather_features_encoded.joblib").columns
+def load_artifacts():
+    model = joblib.load('model.joblib')
+    scaler = joblib.load('scaler.joblib')
+    cols = joblib.load('weather_features_encoded.joblib')
+    if hasattr(cols, 'columns'):
+        # If it's a DataFrame
+        weather_features_encoded_cols = list(cols.columns)
+    else:
+        # If it's already a list
+        weather_features_encoded_cols = cols
+    return model, scaler, weather_features_encoded_cols
 
-
-try:
-    model = load_model()
-except Exception as e:
-    st.error(f"Failed to load model: {e}. Ensure you have trained and saved a 'model.joblib' file.")
-st.title("Road Accident Severity Prediction")
-
+model, scaler, weather_features_encoded_cols = load_artifacts()
 
 
 option = st.selectbox(
