@@ -28,13 +28,12 @@ st.title('Accident Severity Prediction based on Weather')
 st.write("Enter the current weather conditions to predict the accident severity.")
 
 
-Temperature = st.slider("Temperature (F)", min_value=-45.0, max_value=196.0, step=0.1)
-Wind_Chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=196.0, step=0.1)
-Humidity = st.slider("Humidity (F)", min_value=1.0, max_value=100.0, step=0.1)
+temperature = st.slider("Temperature (F)", min_value=-45.0, max_value=196.0, step=0.1)
+wind_chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=196.0, step=0.1)hHumidity = st.slider("Humidity (F)", min_value=1.0, max_value=100.0, step=0.1)
 Pressure = st.slider("Pressure (in)", min_value=0.0, max_value=58.63, step=0.1)
-Visibility = st.slider("Visibility (mi)", min_value=0.0, max_value=100.0, step=0.1)
-Wind_Speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=1087.0, step=0.1)
-Precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=24.0, step=0.1)
+visibility = st.slider("Visibility (mi)", min_value=0.0, max_value=100.0, step=0.1)
+wind_speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=1087.0, step=0.1)
+precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=24.0, step=0.1)
 
 
 
