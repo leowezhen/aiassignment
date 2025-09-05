@@ -31,7 +31,6 @@ Precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=8.0, st
 
 
 input_df = pd.DataFrame([{
-    'Weather_Condition': Weather_Condition,
     'Temperature(F)': Temperature,
     'Wind_Chill(F)': Wind_Chill,
     'Humidity(%)': Humidity,
