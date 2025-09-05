@@ -5,7 +5,7 @@ import numpy as np
 
 # Load the trained model and scaler
 try:
-    dt_model = joblib.load('weather.joblib')
+    dt_model = joblib.load('model.joblib')
     scaler = joblib.load('scaler.joblib')
     # Load the list of columns the model was trained on
     model_columns = joblib.load("weather_features_encoded_cols.joblib")
