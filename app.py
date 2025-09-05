@@ -1,7 +1,4 @@
-pip install joblib
-pip install streamlit
 import streamlit as st
-
 import joblib
 
 @st.cache_data(show_spinner=True)  # Caches the model loading
