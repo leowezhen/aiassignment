@@ -13,7 +13,9 @@ def load_artifacts():
     else:
         # If it's already a list
         weather_features_encoded_cols = cols
-    return model, scaler, weather_features_encoded_cols
+    return model
+    return scaler
+    return weather_features_encoded_cols
 
 model, scaler, weather_features_encoded_cols = load_artifacts()
 
