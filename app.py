@@ -8,6 +8,7 @@ def load_model():
     scaler = joblib.load("scaler.joblib")
     weather_features_encoded_cols = joblib.load("weather_features_encoded.joblib").columns
 
+
 try:
     model = load_model()
 except Exception as e:
