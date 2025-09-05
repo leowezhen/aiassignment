@@ -4,9 +4,9 @@ import numpy as np
 import joblib
 import pandas as pd
 def load_artifacts():
-    model = joblib.load('model.joblib')
-    scaler = joblib.load('scaler.joblib')
-    cols = joblib.load('weather_features_encoded.joblib')
+    model = joblib.load("model.joblib")
+    scaler = joblib.load("scaler.joblib")
+    cols = joblib.load("weather_features_encoded_cols.joblib")
     if hasattr(cols, 'columns'):
         # If it's a DataFrame
         weather_features_encoded_cols = list(cols.columns)
@@ -101,9 +101,12 @@ input_df = pd.DataFrame([{
     'Wind_Speed(mph)': Wind_Speed,
     'Precipitation(in)': Precipitation
 }])
-encoded = pd.get_dummies(input_df, columns=['Weather_Condition'])
+encoded = pd.get_dummies(input_df, columns=["Weather_Condition"])
 encoded = encoded.reindex(columns=weather_features_encoded_cols, fill_value=0)
 encoded[numerical_columns] = scaler.transform(encoded[numerical_columns])
+
+
+
 
 if st.button("Predict"):
     features = np.array([[
