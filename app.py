@@ -6,7 +6,8 @@ import pandas as pd
 def load_model():
     return joblib.load('model.joblib')
     scaler = joblib.load("scaler.joblib")
-    weather_features_encoded = joblib.load("weather_features_encoded.joblib")
+    weather_features_encoded_cols = joblib.load("weather_features_encoded.joblib").columns
+
 try:
     model = load_model()
 except Exception as e:
@@ -95,7 +96,7 @@ input_df = pd.DataFrame([{
     'Precipitation(in)': Precipitation
 }])
 encoded = pd.get_dummies(input_df, columns=['Weather_Condition'])
-encoded = encoded.reindex(columns=weather_features_encoded, fill_value=0)
+encoded = encoded.reindex(columns=weather_features_encoded_cols, fill_value=0)
 encoded[numerical_columns] = scaler.transform(encoded[numerical_columns])
 
 if st.button("Predict"):
