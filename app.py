@@ -17,7 +17,9 @@ def load_artifacts():
     return scaler
     return weather_features_encoded_cols
 
-model, scaler, weather_features_encoded_cols = load_artifacts()
+model = load_artifacts()
+scaler = load_artifacts()
+weather_features_encoded_cols = load_artifacts()
 
 
 option = st.selectbox(
