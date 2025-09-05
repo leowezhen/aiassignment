@@ -52,6 +52,6 @@ if st.button("Predict"):
         float(Precipitation),
 
     ]], dtype=object)
-    prediction = model.predict(encoded)
+    prediction = model.predict(features)
     st.write(f"Predicted Severity: {prediction[0]}")
 
