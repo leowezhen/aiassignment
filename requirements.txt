@@ -3,4 +3,5 @@ joblib
 numpy
 scikit-learn
 pandas
+DecisionTreeClassifier
 
