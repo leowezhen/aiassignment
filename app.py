@@ -105,9 +105,6 @@ encoded = pd.get_dummies(input_df, columns=["Weather_Condition"])
 encoded = encoded.reindex(columns=weather_features_encoded_cols, fill_value=0)
 encoded[numerical_columns] = scaler.transform(encoded[numerical_columns])
 
-
-
-
 if st.button("Predict"):
     features = np.array([[
         float(Temperature),
