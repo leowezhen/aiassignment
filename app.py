@@ -27,14 +27,16 @@ st.title('Accident Severity Prediction based on Weather')
 
 st.write("Enter the current weather conditions to predict the accident severity.")
 
-# Get user input for numerical features
-temperature = st.number_input('Temperature (F)', value=50.0)
-wind_chill = st.number_input('Wind Chill (F)', value=50.0)
-humidity = st.number_input('Humidity (%)', value=60.0)
-pressure = st.number_input('Pressure (in)', value=29.92)
-visibility = st.number_input('Visibility (mi)', value=10.0)
-wind_speed = st.number_input('Wind Speed (mph)', value=10.0)
-precipitation = st.number_input('Precipitation (in)', value=0.0)
+
+Temperature = st.slider("Temperature (F)", min_value=-45.0, max_value=196.0, step=0.1)
+Wind_Chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=196.0, step=0.1)
+Humidity = st.slider("Humidity (F)", min_value=1.0, max_value=100.0, step=0.1)
+Pressure = st.slider("Pressure (in)", min_value=0.0, max_value=58.63, step=0.1)
+Visibility = st.slider("Visibility (mi)", min_value=0.0, max_value=100.0, step=0.1)
+Wind_Speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=1087.0, step=0.1)
+Precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=24.0, step=0.1)
+
+
 
 # Get user input for categorical feature (Weather Condition)
 weather_condition = st.selectbox('Weather Condition', unique_weather_conditions)
