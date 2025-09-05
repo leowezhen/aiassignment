@@ -81,10 +81,19 @@ Wind_Speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=8.0, step=0.
 Precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=8.0, step=0.1)
 
 
+
+
 if st.button("Predict"):
-    features = np.array([['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)', 'Pressure(in)',
-                   'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)',
-                   'Weather_Condition']])
+    features = np.array([[
+        float(Temperature),
+        float(Wind_Chill),
+        float(Humidity),
+        float(Pressure),
+        float(Visibility),
+        float(Wind_Speed),
+        float(Precipitation),
+        Weather_Condition 
+    ]], dtype=object)
     prediction = model.predict(features)
     st.write(f"Predicted Severity: {prediction[0]}")
 
