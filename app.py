@@ -4,6 +4,8 @@ import numpy as np
 import joblib
 def load_model():
     return joblib.load('model.joblib')
+    scaler = joblib.load("scaler.joblib")
+    weather_features_encoded = joblib.load("weather_features_encoded.joblib")
 try:
     model = load_model()
 except Exception as e:
@@ -81,7 +83,19 @@ Wind_Speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=8.0, step=0.
 Precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=8.0, step=0.1)
 
 
-
+input_df = pd.DataFrame([{
+    'Weather_Condition': Weather_Condition,
+    'Temperature(F)': Temperature,
+    'Wind_Chill(F)': Wind_Chill,
+    'Humidity(%)': Humidity,
+    'Pressure(in)': Pressure,
+    'Visibility(mi)': Visibility,
+    'Wind_Speed(mph)': Wind_Speed,
+    'Precipitation(in)': Precipitation
+}])
+encoded = pd.get_dummies(input_df, columns=['Weather_Condition'])
+encoded = encoded.reindex(columns=weather_features_encoded, fill_value=0)
+encoded[numerical_columns] = scaler.transform(encoded[numerical_columns])
 
 if st.button("Predict"):
     features = np.array([[
@@ -94,6 +108,6 @@ if st.button("Predict"):
         float(Precipitation),
         Weather_Condition 
     ]], dtype=object)
-    prediction = model.predict(features)
+    prediction = model.predict(encoded)
     st.write(f"Predicted Severity: {prediction[0]}")
 
