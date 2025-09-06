@@ -3,9 +3,6 @@ import pandas as pd
 import joblib
 import numpy as np
 
-# ================================
-# Load Models
-# ================================
 try:
     # Weather model
     dt_model = joblib.load('model.joblib')
@@ -22,9 +19,7 @@ except FileNotFoundError as e:
     st.error(f"❌ Missing model file: {e}")
     st.stop()
 
-# ================================
-# Columns for Injury Model
-# ================================
+
 injury_columns = [
     'Distance(mi)', 'Street', 'City', 'County', 'State', 'Zipcode', 'Timezone', 'Airport_Code',
     'Weather_Timestamp', 'Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)', 'Pressure(in)', 'Visibility(mi)',
@@ -34,15 +29,13 @@ injury_columns = [
     'Sunrise_Sunset', 'Civil_Twilight', 'Nautical_Twilight', 'Astronomical_Twilight'
 ]
 
-# Weather categories from training columns
+
 unique_weather_conditions = [col.replace('Weather_Condition_', '') for col in model_columns if col.startswith('Weather_Condition_')]
 unique_weather_conditions.insert(0, 'Fair')  # Add base case if dropped
 numerical_features = ['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)',
                       'Pressure(in)', 'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)']
 
-# ================================
-# Streamlit App
-# ================================
+
 st.title('Accident Severity Prediction (Multi-Model)')
 
 feature_type = st.selectbox(
@@ -50,9 +43,6 @@ feature_type = st.selectbox(
     ["Weather", "Road Type", "Injury Severity (Full Features)"]
 )
 
-# ================================
-# Weather Prediction
-# ================================
 if feature_type == "Weather":
     st.subheader("🌦️ Weather-based Prediction")
 
@@ -85,9 +75,7 @@ if feature_type == "Weather":
         prediction = dt_model.predict(input_data_encoded)
         st.success(f"Predicted Accident Severity: {prediction[0]}")
 
-# ================================
-# Road Type Prediction
-# ================================
+
 elif feature_type == "Road Type":
     st.subheader("🚦 Road Type-based Prediction")
 
@@ -98,7 +86,7 @@ elif feature_type == "Road Type":
 
     if st.button("Predict Road Type Severity"):
         if not (crossing or junction or roundabout or station):
-            st.warning("⚠️ Please select at least one road type before predicting.")
+            st.warning("Please select at least one road type before predicting.")
         else:
             input_data = pd.DataFrame([{
                 'Crossing': int(crossing),
@@ -110,11 +98,8 @@ elif feature_type == "Road Type":
             prediction = road_model.predict(input_data)
             st.success(f"Predicted Accident Severity: {prediction[0]}")
 
-# ================================
-# Injury Severity Prediction
-# ================================
 elif feature_type == "Injury Severity (Full Features)":
-    st.subheader("🏥 Injury Severity Prediction")
+    st.subheader("Injury Severity Prediction")
 
     # Minimal inputs for demo (you can expand to all injury_columns)
     distance = st.number_input("Distance (mi)", min_value=0.0, max_value=50.0, step=0.1)
@@ -151,11 +136,7 @@ elif feature_type == "Injury Severity (Full Features)":
             'Stop': int(stop),
             'Traffic_Signal': int(traffic_signal)
         }])
-
-        # One-hot encode categorical columns if needed (Street, City, etc. not included in demo)
         input_data_encoded = pd.get_dummies(input_data)
-
-        # Ensure all injury_columns are present
         for col in injury_columns:
             if col not in input_data_encoded.columns:
                 input_data_encoded[col] = 0
