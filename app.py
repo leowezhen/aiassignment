@@ -1,130 +1,123 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import numpy as np
 
+# =========================
+# Load models
+# =========================
 try:
-    # Weather model
-    dt_model = joblib.load('model.joblib')
-    scaler = joblib.load('scaler.joblib')
-    model_columns = joblib.load("weather_features_encoded_cols.joblib")
+    dt_weather_model = joblib.load("model.joblib")
+    scaler = joblib.load("scaler.joblib")
+    weather_columns = joblib.load("weather_features_encoded_cols.joblib")
 
-    # Road Type model
-    road_model = joblib.load("roadType.joblib")
+    road_type_model = joblib.load("roadType.joblib")
+    road_columns = joblib.load("road_features_encoded_cols.joblib")
 
-    # Injury model
     injury_model = joblib.load("dt_injury_model.joblib")
+    injury_columns = joblib.load("injury_features_encoded_cols.joblib")
 
 except FileNotFoundError as e:
-    st.error(f"❌ Missing model file: {e}")
+    st.error(f"Missing file: {e}")
     st.stop()
 
+# Extract unique weather conditions
+unique_weather_conditions = [col.replace("Weather_Condition_", "") 
+                             for col in weather_columns if col.startswith("Weather_Condition_")]
+unique_weather_conditions.insert(0, "Fair")
 
-injury_columns = [
-    'Distance(mi)', 'Street', 'City', 'County', 'State', 'Zipcode', 'Timezone', 'Airport_Code',
-    'Weather_Timestamp', 'Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)', 'Pressure(in)', 'Visibility(mi)',
-    'Wind_Direction', 'Wind_Speed(mph)', 'Precipitation(in)', 'Weather_Condition',
-    'Amenity', 'Bump', 'Crossing', 'Give_Way', 'Junction', 'No_Exit', 'Railway',
-    'Roundabout', 'Station', 'Stop', 'Traffic_Calming', 'Traffic_Signal', 'Turning_Loop',
-    'Sunrise_Sunset', 'Civil_Twilight', 'Nautical_Twilight', 'Astronomical_Twilight'
-]
+# =========================
+# Page setup
+# =========================
+st.title("🚦 Accident Prediction System")
 
+menu = st.radio("Choose a prediction task:", 
+                ["Weather Severity", "Road Type", "Injury Severity"])
 
-unique_weather_conditions = [col.replace('Weather_Condition_', '') for col in model_columns if col.startswith('Weather_Condition_')]
-unique_weather_conditions.insert(0, 'Fair')  # Add base case if dropped
-numerical_features = ['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)',
-                      'Pressure(in)', 'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)']
+# =========================
+# WEATHER SEVERITY
+# =========================
+if menu == "Weather Severity":
+    st.header("🌦 Predict Accident Severity Based on Weather")
 
+    temperature = st.slider("Temperature (F)", -45.0, 196.0, 60.0, 0.1)
+    wind_chill = st.slider("Wind_Chill (F)", -63.0, 196.0, 50.0, 0.1)
+    humidity = st.slider("Humidity (%)", 1.0, 100.0, 50.0, 0.1)
+    pressure = st.slider("Pressure (in)", 0.0, 58.63, 29.0, 0.1)
+    visibility = st.slider("Visibility (mi)", 0.0, 100.0, 10.0, 0.1)
+    wind_speed = st.slider("Wind_Speed (mph)", 0.0, 1087.0, 5.0, 0.1)
+    precipitation = st.slider("Precipitation (in)", 0.0, 24.0, 0.0, 0.1)
 
-st.title('Accident Severity Prediction (Multi-Model)')
+    weather_condition = st.selectbox("Weather Condition", unique_weather_conditions)
 
-feature_type = st.selectbox(
-    "Select the type of prediction:",
-    ["Weather", "Road Type", "Injury Severity (Full Features)"]
-)
+    if st.button("Predict Weather Severity"):
+        input_df = pd.DataFrame([[temperature, wind_chill, humidity, pressure, visibility,
+                                  wind_speed, precipitation, weather_condition]],
+                                columns=['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)',
+                                         'Pressure(in)', 'Visibility(mi)', 'Wind_Speed(mph)',
+                                         'Precipitation(in)', 'Weather_Condition'])
 
-if feature_type == "Weather":
-    st.subheader("🌦️ Weather-based Prediction")
+        input_encoded = pd.get_dummies(input_df, columns=["Weather_Condition"], drop_first=True)
+        for col in weather_columns:
+            if col not in input_encoded.columns:
+                input_encoded[col] = 0
+        input_encoded = input_encoded[weather_columns]
 
-    temperature = st.slider("Temperature (F)", min_value=-45.0, max_value=196.0, step=0.1)
-    wind_chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=196.0, step=0.1)
-    humidity = st.slider("Humidity (%)", min_value=1.0, max_value=100.0, step=0.1)
-    pressure = st.slider("Pressure (in)", min_value=0.0, max_value=58.63, step=0.1)
-    visibility = st.slider("Visibility (mi)", min_value=0.0, max_value=100.0, step=0.1)
-    wind_speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=1087.0, step=0.1)
-    precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=24.0, step=0.1)
-    weather_condition = st.selectbox('Weather Condition', unique_weather_conditions)
+        input_encoded[['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)', 'Pressure(in)',
+                       'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)']] = scaler.transform(
+            input_encoded[['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)', 'Pressure(in)',
+                           'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)']]
+        )
 
-    if st.button('Predict Weather Severity'):
-        input_data = pd.DataFrame([[temperature, wind_chill, humidity, pressure, visibility,
-                                    wind_speed, precipitation, weather_condition]],
-                                   columns=['Temperature(F)', 'Wind_Chill(F)', 'Humidity(%)',
-                                            'Pressure(in)', 'Visibility(mi)', 'Wind_Speed(mph)',
-                                            'Precipitation(in)', 'Weather_Condition'])
+        pred = dt_weather_model.predict(input_encoded)
+        st.success(f"🌦 Predicted Weather Severity: {pred[0]}")
 
-        # Encode categorical
-        input_data_encoded = pd.get_dummies(input_data, columns=['Weather_Condition'], drop_first=True)
-        for col in model_columns:
-            if col not in input_data_encoded.columns:
-                input_data_encoded[col] = 0
-        input_data_encoded = input_data_encoded[model_columns]
-
-        # Scale numerics
-        input_data_encoded[numerical_features] = scaler.transform(input_data_encoded[numerical_features])
-
-        prediction = dt_model.predict(input_data_encoded)
-        st.success(f"Predicted Accident Severity: {prediction[0]}")
-
-
-elif feature_type == "Road Type":
-    st.subheader("🚦 Road Type-based Prediction")
+# =========================
+# ROAD TYPE PREDICTION
+# =========================
+elif menu == "Road Type":
+    st.header("🛣 Predict Accident Risk by Road Type")
 
     crossing = st.checkbox("Crossing")
     junction = st.checkbox("Junction")
     roundabout = st.checkbox("Roundabout")
     station = st.checkbox("Station")
 
-    if st.button("Predict Road Type Severity"):
-        if not (crossing or junction or roundabout or station):
-            st.warning("Please select at least one road type before predicting.")
-        else:
-            input_data = pd.DataFrame([{
-                'Crossing': int(crossing),
-                'Junction': int(junction),
-                'Roundabout': int(roundabout),
-                'Station': int(station)
-            }])
+    if st.button("Predict Road Type"):
+        input_df = pd.DataFrame([{
+            "Crossing": int(crossing),
+            "Junction": int(junction),
+            "Roundabout": int(roundabout),
+            "Station": int(station)
+        }])
 
-            prediction = road_model.predict(input_data)
-            st.success(f"Predicted Accident Severity: {prediction[0]}")
+        # Align columns
+        for col in road_columns:
+            if col not in input_df.columns:
+                input_df[col] = 0
+        input_df = input_df[road_columns]
 
+        pred = road_type_model.predict(input_df)
+        st.success(f"🛣 Predicted Road Type Risk: {pred[0]}")
 
-elif feature_type == "Injury Severity (Full Features)":
-    st.subheader("🏥 Injury Severity Prediction")
+# =========================
+# INJURY SEVERITY
+# =========================
+elif menu == "Injury Severity":
+    st.header("🏥 Predict Injury Severity")
 
-    # Numerical sliders (using your min/max values from dataset summary)
-    distance = st.slider("Distance (mi)", min_value=0.0, max_value=152.543, step=0.001)
-    temperature = st.slider("Temperature (F)", min_value=-35.0, max_value=162.0, step=0.1)
-    wind_chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=162.0, step=0.1)
-    humidity = st.slider("Humidity (%)", min_value=1.0, max_value=100.0, step=0.1)
-    pressure = st.slider("Pressure (in)", min_value=19.52, max_value=39.45, step=0.01)
-    visibility = st.slider("Visibility (mi)", min_value=0.0, max_value=100.0, step=0.1)
-    wind_speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=232.0, step=0.1)
-    precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=9.99, step=0.01)
+    # Numerical sliders (with real min/max from dataset stats)
+    distance = st.slider("Distance (mi)", 0.0, 152.543, 0.5, 0.001)
+    temperature = st.slider("Temperature (F)", -35.0, 162.0, 60.0, 0.1)
+    wind_chill = st.slider("Wind_Chill (F)", -63.0, 162.0, 50.0, 0.1)
+    humidity = st.slider("Humidity (%)", 1.0, 100.0, 50.0, 0.1)
+    pressure = st.slider("Pressure (in)", 19.52, 39.45, 29.0, 0.01)
+    visibility = st.slider("Visibility (mi)", 0.0, 100.0, 10.0, 0.1)
+    wind_speed = st.slider("Wind_Speed (mph)", 0.0, 232.0, 5.0, 0.1)
+    precipitation = st.slider("Precipitation (in)", 0.0, 9.99, 0.0, 0.01)
 
-    # Categorical text/dropdowns
-    street = st.text_input("Street")
-    city = st.text_input("City")
-    county = st.text_input("County")
-    state = st.text_input("State (e.g., CA)")
-    zipcode = st.text_input("Zipcode")
-    timezone = st.text_input("Timezone (e.g., US/Pacific)")
-    airport_code = st.text_input("Airport Code")
-    weather_timestamp = st.text_input("Weather Timestamp (YYYY-MM-DD HH:MM:SS)")
-    wind_direction = st.text_input("Wind Direction (e.g., N, NW, S)")
     weather_condition = st.selectbox("Weather Condition", unique_weather_conditions)
 
-    # Binary / Boolean checkboxes
+    # Booleans
     amenity = st.checkbox("Amenity")
     bump = st.checkbox("Bump")
     crossing = st.checkbox("Crossing")
@@ -139,30 +132,20 @@ elif feature_type == "Injury Severity (Full Features)":
     traffic_signal = st.checkbox("Traffic Signal")
     turning_loop = st.checkbox("Turning Loop")
 
-    # Twilight & Sunrise/Sunset categories
+    # Twilight
     sunrise_sunset = st.selectbox("Sunrise_Sunset", ["Day", "Night"])
     civil_twilight = st.selectbox("Civil_Twilight", ["Day", "Night"])
     nautical_twilight = st.selectbox("Nautical_Twilight", ["Day", "Night"])
     astronomical_twilight = st.selectbox("Astronomical_Twilight", ["Day", "Night"])
 
     if st.button("Predict Injury Severity"):
-        # Build the input row
-        input_data = pd.DataFrame([{
+        input_df = pd.DataFrame([{
             'Distance(mi)': distance,
-            'Street': street,
-            'City': city,
-            'County': county,
-            'State': state,
-            'Zipcode': zipcode,
-            'Timezone': timezone,
-            'Airport_Code': airport_code,
-            'Weather_Timestamp': weather_timestamp,
             'Temperature(F)': temperature,
             'Wind_Chill(F)': wind_chill,
             'Humidity(%)': humidity,
             'Pressure(in)': pressure,
             'Visibility(mi)': visibility,
-            'Wind_Direction': wind_direction,
             'Wind_Speed(mph)': wind_speed,
             'Precipitation(in)': precipitation,
             'Weather_Condition': weather_condition,
@@ -185,15 +168,12 @@ elif feature_type == "Injury Severity (Full Features)":
             'Astronomical_Twilight': astronomical_twilight
         }])
 
-        # Encode categoricals (Street, City, etc.)
-        input_data_encoded = pd.get_dummies(input_data)
-
-        # Ensure model columns align
+        # Encode
+        input_encoded = pd.get_dummies(input_df)
         for col in injury_columns:
-            if col not in input_data_encoded.columns:
-                input_data_encoded[col] = 0
-        input_data_encoded = input_data_encoded[injury_columns]
+            if col not in input_encoded.columns:
+                input_encoded[col] = 0
+        input_encoded = input_encoded[injury_columns]
 
-        # Predict
-        prediction = injury_model.predict(input_data_encoded)
-        st.success(f"🏥 Predicted Injury Severity: {prediction[0]}")
+        pred = injury_model.predict(input_encoded)
+        st.success(f"🏥 Predicted Injury Severity: {pred[0]}")
