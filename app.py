@@ -76,7 +76,10 @@ elif feature_type == "Road Type":
     roundabout = st.checkbox("Roundabout")
     station = st.checkbox("Station")
 
-    if st.button("Predict Severity (Road Type)"):
+if st.button("Predict Severity (Road Type)"):
+    if not (crossing or junction or roundabout or station):
+        st.warning("Please select at least one road type before predicting.")
+    else:
         input_data = pd.DataFrame([{
             'Crossing': int(crossing),
             'Junction': int(junction),
@@ -86,3 +89,4 @@ elif feature_type == "Road Type":
 
         prediction = road_model.predict(input_data)
         st.write(f"Predicted Accident Severity: {prediction[0]}")
+
