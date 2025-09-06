@@ -102,7 +102,7 @@ elif feature_type == "Road Type":
 elif feature_type == "Injury Severity (Full Features)":
     st.subheader("🏥 Injury Severity Prediction")
 
-    # Updated sliders with dataset min/max values
+    # Numerical sliders (using your min/max values from dataset summary)
     distance = st.slider("Distance (mi)", min_value=0.0, max_value=152.543, step=0.001)
     temperature = st.slider("Temperature (F)", min_value=-35.0, max_value=162.0, step=0.1)
     wind_chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=162.0, step=0.1)
@@ -112,41 +112,88 @@ elif feature_type == "Injury Severity (Full Features)":
     wind_speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=232.0, step=0.1)
     precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=9.99, step=0.01)
 
+    # Categorical text/dropdowns
+    street = st.text_input("Street")
+    city = st.text_input("City")
+    county = st.text_input("County")
+    state = st.text_input("State (e.g., CA)")
+    zipcode = st.text_input("Zipcode")
+    timezone = st.text_input("Timezone (e.g., US/Pacific)")
+    airport_code = st.text_input("Airport Code")
+    weather_timestamp = st.text_input("Weather Timestamp (YYYY-MM-DD HH:MM:SS)")
+    wind_direction = st.text_input("Wind Direction (e.g., N, NW, S)")
     weather_condition = st.selectbox("Weather Condition", unique_weather_conditions)
 
+    # Binary / Boolean checkboxes
+    amenity = st.checkbox("Amenity")
+    bump = st.checkbox("Bump")
     crossing = st.checkbox("Crossing")
+    give_way = st.checkbox("Give Way")
     junction = st.checkbox("Junction")
+    no_exit = st.checkbox("No Exit")
+    railway = st.checkbox("Railway")
     roundabout = st.checkbox("Roundabout")
     station = st.checkbox("Station")
     stop = st.checkbox("Stop")
+    traffic_calming = st.checkbox("Traffic Calming")
     traffic_signal = st.checkbox("Traffic Signal")
+    turning_loop = st.checkbox("Turning Loop")
+
+    # Twilight & Sunrise/Sunset categories
+    sunrise_sunset = st.selectbox("Sunrise_Sunset", ["Day", "Night"])
+    civil_twilight = st.selectbox("Civil_Twilight", ["Day", "Night"])
+    nautical_twilight = st.selectbox("Nautical_Twilight", ["Day", "Night"])
+    astronomical_twilight = st.selectbox("Astronomical_Twilight", ["Day", "Night"])
 
     if st.button("Predict Injury Severity"):
+        # Build the input row
         input_data = pd.DataFrame([{
             'Distance(mi)': distance,
+            'Street': street,
+            'City': city,
+            'County': county,
+            'State': state,
+            'Zipcode': zipcode,
+            'Timezone': timezone,
+            'Airport_Code': airport_code,
+            'Weather_Timestamp': weather_timestamp,
             'Temperature(F)': temperature,
             'Wind_Chill(F)': wind_chill,
             'Humidity(%)': humidity,
             'Pressure(in)': pressure,
             'Visibility(mi)': visibility,
+            'Wind_Direction': wind_direction,
             'Wind_Speed(mph)': wind_speed,
             'Precipitation(in)': precipitation,
             'Weather_Condition': weather_condition,
+            'Amenity': int(amenity),
+            'Bump': int(bump),
             'Crossing': int(crossing),
+            'Give_Way': int(give_way),
             'Junction': int(junction),
+            'No_Exit': int(no_exit),
+            'Railway': int(railway),
             'Roundabout': int(roundabout),
             'Station': int(station),
             'Stop': int(stop),
-            'Traffic_Signal': int(traffic_signal)
+            'Traffic_Calming': int(traffic_calming),
+            'Traffic_Signal': int(traffic_signal),
+            'Turning_Loop': int(turning_loop),
+            'Sunrise_Sunset': sunrise_sunset,
+            'Civil_Twilight': civil_twilight,
+            'Nautical_Twilight': nautical_twilight,
+            'Astronomical_Twilight': astronomical_twilight
         }])
 
-        # Encoding + column alignment
+        # Encode categoricals (Street, City, etc.)
         input_data_encoded = pd.get_dummies(input_data)
+
+        # Ensure model columns align
         for col in injury_columns:
             if col not in input_data_encoded.columns:
                 input_data_encoded[col] = 0
         input_data_encoded = input_data_encoded[injury_columns]
 
+        # Predict
         prediction = injury_model.predict(input_data_encoded)
-        st.success(f"Predicted Injury Severity: {prediction[0]}")
-
+        st.success(f"🏥 Predicted Injury Severity: {prediction[0]}")
