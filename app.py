@@ -98,17 +98,20 @@ elif feature_type == "Road Type":
             prediction = road_model.predict(input_data)
             st.success(f"Predicted Accident Severity: {prediction[0]}")
 
-elif feature_type == "Injury Severity (Full Features)":
-    st.subheader("Injury Severity Prediction")
 
-    # Minimal inputs for demo (you can expand to all injury_columns)
-    distance = st.number_input("Distance (mi)", min_value=0.0, max_value=50.0, step=0.1)
-    temperature = st.slider("Temperature (F)", min_value=-45.0, max_value=196.0, step=0.1)
+elif feature_type == "Injury Severity (Full Features)":
+    st.subheader("🏥 Injury Severity Prediction")
+
+    # Updated sliders with dataset min/max values
+    distance = st.slider("Distance (mi)", min_value=0.0, max_value=152.543, step=0.001)
+    temperature = st.slider("Temperature (F)", min_value=-35.0, max_value=162.0, step=0.1)
+    wind_chill = st.slider("Wind_Chill (F)", min_value=-63.0, max_value=162.0, step=0.1)
     humidity = st.slider("Humidity (%)", min_value=1.0, max_value=100.0, step=0.1)
-    pressure = st.slider("Pressure (in)", min_value=0.0, max_value=58.63, step=0.1)
+    pressure = st.slider("Pressure (in)", min_value=19.52, max_value=39.45, step=0.01)
     visibility = st.slider("Visibility (mi)", min_value=0.0, max_value=100.0, step=0.1)
-    wind_speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=1087.0, step=0.1)
-    precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=24.0, step=0.1)
+    wind_speed = st.slider("Wind_Speed (mph)", min_value=0.0, max_value=232.0, step=0.1)
+    precipitation = st.slider("Precipitation (in)", min_value=0.0, max_value=9.99, step=0.01)
+
     weather_condition = st.selectbox("Weather Condition", unique_weather_conditions)
 
     crossing = st.checkbox("Crossing")
@@ -119,10 +122,10 @@ elif feature_type == "Injury Severity (Full Features)":
     traffic_signal = st.checkbox("Traffic Signal")
 
     if st.button("Predict Injury Severity"):
-        # Build input (basic version, categorical placeholders kept simple)
         input_data = pd.DataFrame([{
             'Distance(mi)': distance,
             'Temperature(F)': temperature,
+            'Wind_Chill(F)': wind_chill,
             'Humidity(%)': humidity,
             'Pressure(in)': pressure,
             'Visibility(mi)': visibility,
@@ -136,6 +139,8 @@ elif feature_type == "Injury Severity (Full Features)":
             'Stop': int(stop),
             'Traffic_Signal': int(traffic_signal)
         }])
+
+        # Encoding + column alignment
         input_data_encoded = pd.get_dummies(input_data)
         for col in injury_columns:
             if col not in input_data_encoded.columns:
@@ -144,3 +149,4 @@ elif feature_type == "Injury Severity (Full Features)":
 
         prediction = injury_model.predict(input_data_encoded)
         st.success(f"Predicted Injury Severity: {prediction[0]}")
+
