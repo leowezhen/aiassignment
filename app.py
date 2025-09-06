@@ -14,7 +14,7 @@ try:
     road_columns = joblib.load("road_features_encoded_cols.joblib")
 
     injury_model = joblib.load("dt_injury_model.joblib")
-    injury_columns = joblib.load("injury_features_encoded_cols.joblib")
+    injury_columns = joblib.load("dt_injury_model.joblib_cols.joblib")
 
 except FileNotFoundError as e:
     st.error(f"Missing file: {e}")
